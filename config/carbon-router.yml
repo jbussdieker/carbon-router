@@ -1,0 +1,11 @@
+server:
+  line_receiver_port: 2003
+  udp_receiver_port: 2004
+  pickle_receiver_port: 2005
+destinations:
+ - type: rabbitmq
+   host: localhost
+   queue: metrics
+ - type: carbon
+   host: localhost
+   port: 2103
