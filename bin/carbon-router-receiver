@@ -1,0 +1,26 @@
+#!/usr/bin/env ruby
+require 'bunny'
+
+while true do
+  begin
+  conn = TCPSocket.new "localhost", 2103
+
+  @bunny = Bunny.new(:host => "localhost", :port => 5672, :user => "guest", :pass => "guest")
+  @bunny.start
+  @queue = @bunny.queue("metrics")
+  @queue.subscribe(:block => true) do |message|
+    print "."
+    conn.puts(message[:payload])
+  end
+
+  rescue Errno::EPIPE => e
+    puts "Connection Lost. Reconnecting..."
+    sleep 10
+  rescue Errno::ECONNREFUSED => e
+    puts "Connection Refused. Reconnecting..."
+    sleep 10
+  rescue Exception => e
+    puts "Unhandled Error: #{e.message}"
+    exit 1
+  end
+end

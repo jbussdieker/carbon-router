@@ -1,0 +1,20 @@
+#!/usr/bin/env ruby
+require 'bunny'
+require 'socket'
+
+@bunny = Bunny.new(:host => "localhost", :port => 5672, :user => "guest", :pass => "guest")
+@bunny.start
+@queue = @bunny.queue("metrics")
+@exchange = @bunny.exchange("metrics-exchange", :type => "fanout", :durable => true)
+@queue.bind(@exchange)
+
+server = TCPServer.new 2003
+
+loop do
+  Thread.start(server.accept) do |client|
+    while line = client.gets("\n")
+      print "."
+      @exchange.publish(line)
+    end
+  end
+end
